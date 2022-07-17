@@ -7,50 +7,81 @@
 ORG H80
 
 ; Exemplo de vetor de dados
-DAB H05,H83,H87,HF9,H8A,H00,HFA,HF6,H83,H00,H10,H80,H00,H3D
+V: DAB H05,H83,H87,HF9,H8A,H00,HFA,HF6,H83,H00,H10,H80,H00,H3D
 
-V: DB H80
-E: DB H81
-D: DB H82
-temp: DB 0
+; Vetor de navegação
+vet_nav: DAB [05]
 
-; Inicialização
-; V -> H80
-; E -> H81
-; D -> H82
+point: DB
+aux: DB 
 
 
 ; Código
 ORG H00
 
-; V: 1o byte, valor
-; E: 2o byte, end. da prox. tripla à esquerda
-; D: 3o byte, end. da prox tripla à direita 
+; Inicializa vetor de navegação
+LDR A,#00
+STR A,vet_nav
 
-LDR B,V
+; Inicializa contador
+LDR X,#0
 
-; Navegação
-navega: STR B,V
-	
-	LDR X,#1
-	LDR A,V,X
-	STR A,E
+; Leitura dos dados
+; Valor no endereço H80
 
-	LDR X,#2
-	LDR A,V,X
-	STR A,D
+LDR B,#V
+STR B,point
 
-	LDR A,V,I ; Verifica V
-	JN esq ; Caso esquerda
-	JZ fim; ; Caso parada
-	JMP dir ; Caso direita
+loop:
+
+LDR A,point,I
+STR A,aux
+
+;LDR A,aux,I
+
+LDR X,vet_nav
+ADD X,#1
+STR A,vet_nav,X ;
+STR X,vet_nav ; Número de elem. no vetor
+
+JN esq;
+JZ fim;
+JMP dir;
 
 	; Tripla esquerda
-	esq: 	LDR B,E
-		JMP navega
+	esq: 	LDR X,#1
+		LDR A,H80,X
+		JMP loop
 
 	; Tripla direita
-	dir: 	LDR B,D
-		JMP navega
+	dir: 	ADD B,#2
+		;END
+		JMP loop
 
+
+;LDR B,V
+
+; Navegação
+;navega: STR B,V
+	
+;	LDR X,#1
+;	LDR A,V,X;	STR A,E
+;
+;	LDR X,#2
+;	LDR A,V,X
+;	STR A,D
+;
+;	LDR A,V,I ; Verifica V
+;;	JN esq ; Caso esquerda
+;	JZ fim; ; Caso parada
+;	JMP dir ; Caso direita
+;
+;	; Tripla esquerda
+;	esq: 	LDR B,E
+;		JMP navega
+;
+;	; Tripla direita
+;	dir: 	LDR B,D
+;		JMP navega
+;
 fim: HLT
